@@ -1,15 +1,30 @@
 const express =require('express');
 const app = express();
 const http = require("http");
+const path =require("path");
+const { disconnect } = require('process');
 
 const socketio=require("socket.io")
 
 const server = http.createServer(app);
 
-const io =socketio(server)
+const io =socketio(server);
+
+//ejs
+app.set("view engine","ejs")
+app.set(express.static(path.join(__dirname ,'public')));
+io.on("connection",function(socket){
+    socket.on("send-location",function(data){
+        io.emit("receive-location",{id:socket.id, ...data});
+    });
+    console.log("a user connected");
+socket.on("diconnect",function(){
+    io.emit("user-disconnected",socket.id);
+})
+})
 
 app.get("/",function(req,res){
-    res.send("Hello ");
+    res.render("index");
 })
 
 
